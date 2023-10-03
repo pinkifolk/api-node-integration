@@ -1,18 +1,18 @@
 
 # Integracion Impruvex Provaltec y Manager
 
-Impruvex a llegado a mantener un control exacto y llevar la logistica a otro nivel en Provaltec. Pero tambien llego a sacudir el area de IT con una integracion de ambos sistemas Legacy (cotizador,comex) a Impruvex y Legacy(cotizador,comex) a Manager. En esta documentacion hablaremos y detallaremos toda la integracion, estara dividida en 3 partes, primero el consumo de las APIs de Impruvex, la integracion con Manager y como ultimo la creacion de nuestra API.
+Impruvex ha llegado a establecer un control exacto y llevar la logística a otro nivel en Provaltec. Pero también llego a sacudir el área de IT con una integración de ambos sistemas Legacy (cotizador, comex) a Impruvex y Legacy(cotizador, comex) a Manager. En esta documentación hablaremos y detallaremos toda la integración, estará dividida en 3 partes, primero la integración con Impruvex, la integración con Manager y como último la creación de nuestra API para que Impruvex pueda guardar datos en nuestros sistemas. 
  
  
 
 ### Temario
-- Obtencion de token
-- Creacion de OC
-- Creacion de OS
+- Obtención de token
+- Creación de OC
+- Creación de OS
 - Resumen de inventario
-- Envios a nuestra Api
-- Creacion OC en Manager
+- Creación OC en Manager
 - Creacion de Nota de venta en Manager
+- Envíos a nuestra API
 
 
 ### Lenguajes usados
@@ -30,7 +30,7 @@ Impruvex a llegado a mantener un control exacto y llevar la logistica a otro niv
 
 ## Consumo de Apis Impruvex
 
-Impruvex nos ha facilitado sus Apis para inyectar la informacion que se ingrese en nuestro sistema, Pero necitamos una token de acceso el cual se entrega mediante el inicio de sesion. Es por eso que se necesita unas credenciales de acceso. Estas credenciales fueron entregadas en la capacitacion realizada por el Maestro Marcelo Fierro y es un usuario especialmente para la integracion. A continuacion detallo como se solicita el token.
+Impruvex nos ha facilitado sus Apis para inyectar la información que se ingrese en nuestro sistema, Pero nesecitamos un token de acceso el cual se entrega mediante el inicio de sesión. Es por eso que se necesitan unas credenciales de acceso. Estas credenciales fueron entregadas en la capacitación realizada por el Maestro Marcelo Fierro y es un usuario especialmente para la integración. A continuación detallo como se solicita el token.
 
 
 ### Obtener token
@@ -39,7 +39,7 @@ Impruvex nos ha facilitado sus Apis para inyectar la informacion que se ingrese 
   POST /api/invas/rest/usuario/loginWS
 ```
 
-| Parametro | Tipo     | Descripcion                |
+| Parametro | Tipo     | Descripción                |
 | :-------- | :------- | :------------------------- |
 | `usuario` | `string` | **Requerido**. |
 | `password` | `string` | **Requerido**.|
@@ -74,21 +74,21 @@ curl_close($conInv);
 
 ### Creacion de OC
 
-Solo indicaremos los compos que son requeridos, para mayor detalle solicitar la coleccion a Impruvex
+Solo indicaremos los campos que son requeridos, para mayor detalle solicitar la colección a Impruvex
 
 ```http
   POST /api/invas/rest/oc/upload
 ```
 
-| Parametro | Tipo     | Descripcion                |
+| Parametro | Tipo     | Descripción                |
 | :-------- | :------- | :------------------------- |
 | `usuario` | `string` | **Requerido**. |
 | `password` | `string` | **Requerido**.|
-| `codigo` | `string` | Hace referencia al numero de PO en el sistema Comex|
-| `sitio` | `string` | El sitio siempre sera CD_PROVALTEC|
-| `proveedor` | `string` |  El rut del proveedor, en Comex no tenemos rut, por lo que hay que agregar un campo a la tabla|
-| `tipo` | `string` | El tipo es IMPORTADO,pero estamo evaluando la opcion de pasar lo nacional tambien por el modulo de Comex  |
-| `descripcion` | `string` | Descripcion de la compra|
+| `codigo` | `string` | Hace referencia al número de PO en el sistema Comex|
+| `sitio` | `string` | El sitio siempre será CD_PROVALTEC|
+| `proveedor` | `string` |  El RUT del proveedor, en Comex no tenemos RUT, por lo que hay que agregar un campo a la tabla|
+| `tipo` | `string` | El tipo es IMPORTADO, pero estamos evaluando la opción de pasar lo nacional también por el módulo de Comex  |
+| `descripcion` | `string` | Descripción de la compra|
 | `sku` | `string` | Id del producto|
 | `unidadesEnviadas` | `string` | Cantidades que se compraron|
 | `campo01` | `string` | No se usa, pero es requerido|
@@ -149,20 +149,20 @@ curl_close($conInv);
 ```
 ### Creacion de OC
 
-Solo indicaremos los compos que son requeridos, para mayor detalle solicitar la coleccion a Impruvex
+Solo indicaremos los campos que son requeridos, para mayor detalle solicitar la colección a Impruvex
 
 ```http
   POST /api/invas/rest/os/upload
 ```
 
-| Parametro | Tipo     | Descripcion                |
+| Parametro | Tipo     | Descripción                |
 | :-------- | :------- | :------------------------- |
 | `usuario` | `string` | **Requerido**. |
 | `password` | `string` | **Requerido**.|
-| `idOs` | `string` | Hace referencia al numero de cotizacion en el sistema (cotizador)|
+| `idOs` | `string` | Hace referencia al número de cotización en el sistema (cotizador)|
 | `sitio` | `string` | El sitio siempre sera CD_PROVALTEC|
 | `tipoOs` | `string` | **Pendiente de definir**|
-| `cliente` | `string` | Rut de la empresa  |
+| `cliente` | `string` | RUT de la empresa  |
 | `fechaPactada` | `string` | Fecha de creacion|
 | `nombreCliente` | `string` | Razon Social|
 | `telefonoCliente` | `string` | |
@@ -179,12 +179,6 @@ Solo indicaremos los compos que son requeridos, para mayor detalle solicitar la 
 ```mysql
 //  Cabecera 
 $query = "SELECT C.cotizacion, C.fecha, CL.rut, CL.razon_social, IFNULL(CL.telefonos,'')telefono, IFNULL(CL.direccion,'') direccion, IFNULL(CO.descripcion,'') comuna, IFNULL(CL.email,'') email FROM cotizaciones C JOIN clientes CL ON CL.id=C.cliente_id JOIN comunas CO ON CO.id=CL.comuna WHERE C.cotizacion='111444VV';";
-
-// Detalle  
-$query = "SELECT CD.producto_id sku, CD.cantidad FROM cotizaciones_det CD WHERE cotizacion_id='112150';";
-```
-#### Codigo PHP usando CURL
-```php
 $result = mysqli_query($conn, $query);
 while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
     $os = $row['cotizacion'];
@@ -197,6 +191,8 @@ while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
     $emailCliente = $row['email'];
 }
 
+// Detalle  
+$query = "SELECT CD.producto_id sku, CD.cantidad FROM cotizaciones_det CD WHERE cotizacion_id='112150';";
 $result = mysqli_query($conn, $query);
 $detalle = [];
 while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
@@ -205,6 +201,9 @@ while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
         "unidadesOrdenadas" => $row['cantidad']
     ];
 }
+```
+#### Codigo PHP usando CURL
+```php
 $url = "tuUrl";
 $token = "tuToken";
 $inserData = [
@@ -241,7 +240,7 @@ curl_close($conInv);
 
 ```
 ### Resumen de inventario
-El stock se puede consultar unitariamente o de forma global, usaremos ambas opciones. Para consumir unitariamente el stock se deben enviar ambos parametros, sku y sitio. Pero para consumir todo el stock se debe enviar solo el sitio.
+El stock se puede consultar unitariamente o de forma global, usaremos ambas opciones. Para consumir unitariamente el stock se deben enviar ambos parámetros, sku y sitio. Pero para consumir todo el stock se debe enviar solo el sitio.
 
 ### Obtener stock
 
@@ -249,7 +248,7 @@ El stock se puede consultar unitariamente o de forma global, usaremos ambas opci
   POST /api/invas/rest/WmsResumenInventario/consultaInventarioSku
 ```
 
-| Parametro | Tipo     | Descripcion                |
+| Parametro | Tipo     | Descripción                |
 | :-------- | :------- | :------------------------- |
 | `usuario` | `string` | **Requerido**. |
 | `password` | `string` | **Requerido**.|
@@ -290,20 +289,20 @@ curl_close($conInv);
 
 ## Consumo de Web Services Manager
 
-Manager posee un WS para todos sus clientes, este contiene algunos modulos del producto Time ERP. Se usaran 2 de estos modulos que son, abastecimiento y Ventas. Abastecimientos lo usaremos para inyectar la OC desde el modulo de Comex. Ventas lo usaremos para crear una Nota de venta la cual luego se transformara en una Factura para el cliente final. 
+Manager posee un WS para todos sus clientes, este contiene algunos módulos del producto Time ERP utilizaremos 2 de estos módulos que son, abastecimiento y Ventas. En Abastecimientos inyectaremos la OC desde el módulo de Comex. Ventas lo emplearemos para crear una Nota de venta, la cual luego se transformara en una Factura para el cliente final. 
 
 ### Creacion de cabecera OC Manager 
 ```http
   POST /sec/prod/abastecimiento.asmx?wsdl
 ```
 
-| Parametro | Tipo     | Descripcion                |
+| Parametro | Tipo     | Descripción                |
 | :-------- | :------- | :------------------------- |
 | `rutEmpresa` | `string` | **Requerido**. |
 | `token` | `string` | **Requerido**.|
 | `rutProveedor` | `string` | id del producto.|
 | `fecha` | `string` |  |
-| `atencion` | `string` | Usaremos el nombre de la PO |
+| `atencion` | `string` | utilizaremos el nombre de la PO |
 | `tipoMoneda` | `string` | Manager usa los valores de $ EURO USD |
 | `valorMoneda` | `int` |  |
 | `montoDescuento` | `int` | no aplica |
@@ -322,10 +321,6 @@ Manager posee un WS para todos sus clientes, este contiene algunos modulos del p
 ```mysql
 //  Cabecera 
 $query = "SELECT CO.ocompra,CO.moneda_id moneda,DATE_FORMAT(CO.fecha_ocompra,'%d/%m/%Y') fecha,DATE_FORMAT(CO.fecha_entrega,'%d/%m/%Y') entrega FROM comex_ocompra CO JOIN comex_proveedores CP ON CP.id=CO.proveedor_id WHERE CO.ocompra='POC5-FBV';";
-```
-
-#### Codigo PHP usando SOAP
-```php
 $result = mysqli_query($conn, $query);
 while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
     $oc = $row['ocompra'];
@@ -333,6 +328,11 @@ while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
     $entrega = $row['entrega'];
     $moneda = $row['moneda'];
 }
+```
+
+#### Codigo PHP usando SOAP
+```php
+
 switch ($moneda) {
     case 1:
         $tipoMoneda = "USD";
@@ -379,11 +379,11 @@ $numOC = $data->Pk;
   POST /sec/prod/abastecimiento.asmx?wsdl
 ```
 
-| Parametro | Tipo     | Descripcion                |
+| Parametro | Tipo     | Descripción                |
 | :-------- | :------- | :------------------------- |
 | `rutEmpresa` | `string` | **Requerido**. |
 | `token` | `string` | **Requerido**.|
-| `numOc` | `string` | numero entregado por la inyeccion de la cabecera|
+| `numOc` | `string` | número entregado por la inyección de la cabecera|
 | `codigoArticulo` | `string` |  |
 | `cantidad` | `string` |  |
 | `precio` | `string` |  |
@@ -401,12 +401,13 @@ $numOC = $data->Pk;
 
 ```mysql
 //  Detalle 
-$query = "SELECT P.codigo_propio,COD.cantidad,COD.unitario FROM comex_ocompra_det COD JOIN productos P ON P.id=COD.producto_id WHERE COD.ocompra_id=4;"; // id de prueba
+$query = "SELECT P.codigo_propio,COD.cantidad,COD.unitario FROM comex_ocompra_det COD JOIN productos P ON P.id=COD.producto_id WHERE COD.ocompra_id=4;";
+$result = mysqli_query($conn, $query);
 ```
 
 #### Codigo PHP usando SOAP
 ```php
-$result = mysqli_query($conn, $query);
+
 while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
     $uri = "tuUrl";
     $usuario = 'turutempresa';
@@ -423,7 +424,7 @@ while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
         'cantidad' => $cantidad,
         'precio' => $unitario,
         'cuentaContable' => 110801,
-        'centroCosto' => 1008, // 10800 en la base productiva
+        'centroCosto' => 1008,
         'bodega' => 'B1',
         'fechaEntrega' => $entrega,
         'terminado' => 0
