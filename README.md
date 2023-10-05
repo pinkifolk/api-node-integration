@@ -91,8 +91,6 @@ Solo indicaremos los campos que son requeridos, para mayor detalle solicitar la 
 | `descripcion` | `string` | Descripción de la compra|
 | `sku` | `string` | Id del producto|
 | `unidadesEnviadas` | `string` | Cantidades que se compraron|
-| `campo01` | `string` | No se usa, pero es requerido|
-| `campo02` | `string` | No se usa, pero es requerido |
 
 #### Consulta MYSQL
 
@@ -147,7 +145,7 @@ $data = curl_exec($conInv);
 curl_close($conInv);
 
 ```
-### Creacion de OC
+### Creacion de OS
 
 Solo indicaremos los campos que son requeridos, para mayor detalle solicitar la colección a Impruvex
 
@@ -161,7 +159,7 @@ Solo indicaremos los campos que son requeridos, para mayor detalle solicitar la 
 | `password` | `string` | **Requerido**.|
 | `idOs` | `string` | Hace referencia al número de cotización en el sistema (cotizador)|
 | `sitio` | `string` | El sitio siempre sera CD_PROVALTEC|
-| `tipoOs` | `string` | **Pendiente de definir**|
+| `tipoOs` | `string` | OV para pedidos normales y OSEXPRESS para los pedidos presenciales|
 | `cliente` | `string` | RUT de la empresa  |
 | `fechaPactada` | `string` | Fecha de creacion|
 | `nombreCliente` | `string` | Razon Social|
@@ -169,7 +167,7 @@ Solo indicaremos los campos que son requeridos, para mayor detalle solicitar la 
 | `direccionCliente` | `string` |  |
 | `ciudadcliente` | `string` |  |
 | `emailCliente` | `string` | |
-| `destino` | `string` | **Pendiente de definir** |
+| `destino` | `string` | RUTA_PRINCIPAL |
 | `clienteComuna` | `string` |  |
 | `producto` | `string` | Id del producto |
 | `unidadesOrdenadas` | `string` | Cantidad vendida |
@@ -212,7 +210,7 @@ $inserData = [
     "os" => [
         "idOs" => $os,
         "sitio" => "CD_PROVALTEC",
-        "tipoOs" => "OS-PTV",
+        "tipoOs" => "OV",// OSEXPRESS para presenciales
         "cliente" => $cliente,
         "fechaPactada" => $fecha,
         "nombreCliente" => $nombreCliente,
@@ -220,7 +218,7 @@ $inserData = [
         "direccionCliente" => mb_convert_encoding($direccionCliente, 'UTF-8', 'ISO-8859-1'), // usar utf8_encode para versiones > 7
         "ciudadcliente" => $ciudadcliente,
         "emailCliente" => $emailCliente,
-        "destino" => "Definir",//Definir nombre de ruta
+        "destino" => "RUTA_PRINCIPAL",
         "clienteRegion" => "",
         "clienteComuna" => $ciudadcliente,
         "listaTipoInsumo" => $detalle
