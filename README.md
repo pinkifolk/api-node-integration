@@ -87,7 +87,7 @@ Solo indicaremos los campos que son requeridos, para mayor detalle solicitar la 
 | `codigo` | `string` | Hace referencia al número de PO en el sistema Comex|
 | `sitio` | `string` | El sitio siempre será CD_PROVALTEC|
 | `proveedor` | `string` |  El RUT del proveedor, en Comex no tenemos RUT, por lo que hay que agregar un campo a la tabla|
-| `tipo` | `string` | El tipo es IMPORTADO, pero estamos evaluando la opción de pasar lo nacional también por el módulo de Comex  |
+| `tipo` | `string` | El tipo es IMP, pero estamos evaluando la opción de pasar lo nacional también por el módulo de Comex, usar NAC para los nacionales |
 | `descripcion` | `string` | Descripción de la compra|
 | `sku` | `string` | Id del producto|
 | `unidadesEnviadas` | `string` | Cantidades que se compraron|
@@ -96,15 +96,15 @@ Solo indicaremos los campos que son requeridos, para mayor detalle solicitar la 
 
 ```mysql
 //  Cabecera 
-$query = "SELECT CO.ocompra,CP.id FROM comex_ocompra CO JOIN comex_proveedores CP ON CP.id=CO.proveedor_id WHERE CO.ocompra='POC5-FBV';";
+$query = "SELECT CO.ocompra,CP.id FROM comex_ocompra CO JOIN comex_proveedores CP ON CP.id=CO.proveedor_id WHERE CO.ocompra=".$id.";";
 $result = mysqli_query($conn, $query);
 while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
     $codigo = $row['ocompra'];
-    $proveedor = $row['id'];
+    $proveedor = $row['identificacion'];
 }
 
 // Detalle  
-$query = "SELECT COD.producto_id sku,COD.cantidad FROM comex_ocompra_det COD WHERE COD.ocompra_id=4;";
+$query = "SELECT COD.producto_id sku,COD.cantidad FROM comex_ocompra_det COD WHERE COD.ocompra_id=".$id.";";
 $result = mysqli_query($conn, $query);
 $detalle = [];
 while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
@@ -128,8 +128,8 @@ $inserData = [
         "codigo" => $codigo,
         "sitio" => "CD_PROVALTEC", 
         "proveedor" => $proveedor, 
-        "tipo" => "IMPORTACION", 
-        "descripcion" => "Prueba de inyeccion", 
+        "tipo" => "IMP", 
+        "descripcion" => "OC ingresada mediante integracion", 
         "listaDetalle" => $detalle
     ]
 ];
@@ -437,4 +437,46 @@ while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
 
 ## Construccion de api Provaltec
 
-en desarrollo
+### Recepción de ASN
+```http
+  POST /api/impruvex/asn/
+```
+Impruvex nos envía un JSON con mucha información sobre la llegada de mercadería a Provaltec. La API recibe esta información y la procesa en la tabla recepciones_invas, la cual tiene los siguientes campos.
+
+| Parametro | Tipo     | Descripcion                |
+| :-------- | :------- | :------------------------- |
+| `fecharecep` | `string` | Fecha de recepción de la ASN |
+| `numoc` | `string` | Numero de oc|
+| `sku` | `string` | Código del producto|
+| `unidades` | `string` | Unidades recibidas  |
+
+#### Codigo Node js
+```js
+export const verificarAsn = async (req, res) => {
+    await req.getConnection(async (error, conexion) => {
+        if (error) return res.send(error)
+        const post = req.body
+        const subPost = req.body.listaCajas
+        await subPost.forEach(e => {
+            let sql = 'INSERT INTO recepciones_invas VALUES (?,?,?,?,?,?);'
+            conexion.query(sql, [undefined, post.fecharecep, post.numoc, e.sku, e.unidades, 0], (err, rows) => {
+                if (err) return console.log(err)
+            })
+            conexion.end();
+        })
+        await conexion.query('SELECT COUNT(id) row FROM recepciones_invas WHERE ocompra=?', [post.numoc], (err, rows) => {
+            if (err) return console.log(err)
+            res.json({
+                "data": true,
+                "DIresult": "Success",
+                "DImsg": post.numoc,
+                "messaje": "Datos Recibidos",
+                "cantidadProductos": rows[0].row
+
+            })
+        })
+        conexion.end();
+
+    })
+}
+```
