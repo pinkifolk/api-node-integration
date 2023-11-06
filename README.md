@@ -167,7 +167,7 @@ Solo indicaremos los campos que son requeridos, para mayor detalle solicitar la 
 | `direccionCliente` | `string` |  |
 | `ciudadcliente` | `string` |  |
 | `emailCliente` | `string` | |
-| `destino` | `string` | RUTA_PRINCIPAL |
+| `destino` | `string` | RUTA_PRINCIPAL,RUTA_ECOMMERCE,RUTA_ECOMMERCE |
 | `clienteComuna` | `string` |  |
 | `producto` | `string` | Id del producto |
 | `unidadesOrdenadas` | `string` | Cantidad vendida |
@@ -445,10 +445,11 @@ Impruvex nos envía un JSON con mucha información sobre la llegada de mercader�
 
 | Parametro | Tipo     | Descripcion                |
 | :-------- | :------- | :------------------------- |
-| `fecharecep` | `string` | Fecha de recepción de la ASN |
-| `numoc` | `string` | Numero de oc|
-| `sku` | `string` | Código del producto|
-| `unidades` | `string` | Unidades recibidas  |
+| `fecha_recepcion` | `date` `NULL`  | Fecha de recepción de la ASN |
+| `ocompra` | `varchar(30)` `NULL`| Numero de oc|
+| `producto_id` | `int(10) unsigned` `NULL` | Código del producto|
+| `cantidad` | `smallint(5) unsigned` `NULL` | Unidades recibidas  |
+| `estado` | `tinyint(3) unsigned` `NOT NULL` | estado usado para notificación  |
 
 #### Codigo Node js
 ```js
@@ -458,7 +459,7 @@ export const verificarAsn = async (req, res) => {
         const post = req.body
         const subPost = req.body.listaCajas
         await subPost.forEach(e => {
-            let sql = 'INSERT INTO recepciones_invas VALUES (?,?,?,?,?,?);'
+            let sql = 'INSERT INTO recepciones_invas (fecha_recepcion,ocompra,producto_id,cantidad,estado) VALUES (?,?,?,?,?,?);'
             conexion.query(sql, [undefined, post.fecharecep, post.numoc, e.sku, e.unidades, 0], (err, rows) => {
                 if (err) return console.log(err)
             })
@@ -475,8 +476,6 @@ export const verificarAsn = async (req, res) => {
 
             })
         })
-        conexion.end();
-
     })
 }
 ```
