@@ -352,7 +352,7 @@ switch ($moneda) {
         break;
 }
 
-$usuario = 'turutempresa;
+$usuario = 'turutempresa';
 $clave = 'tuToken';
 
 $cliente = new SoapClient($uri);
