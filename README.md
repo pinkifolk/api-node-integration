@@ -457,16 +457,15 @@ export const verificarAsn = async (req, res) => {
     await req.getConnection(async (error, conexion) => {
         if (error) return res.send(error)
         const post = req.body
-        const subPost = req.body.listaCajas
+        const subPost = req.body.listaCajas // get nested
         await subPost.forEach(e => {
-            let sql = 'INSERT INTO recepciones_invas (fecha_recepcion,ocompra,producto_id,cantidad,estado) VALUES (?,?,?,?,?,?);'
+            let sql = 'INSERT INTO recepciones_invas VALUES (?,?,?,?,?,?);'
             conexion.query(sql, [undefined, post.fecharecep, post.numoc, e.sku, e.unidades, 0], (err, rows) => {
-                if (err) return console.log(err)
+                if (err) throw err 
             })
-            conexion.end();
         })
         await conexion.query('SELECT COUNT(id) row FROM recepciones_invas WHERE ocompra=?', [post.numoc], (err, rows) => {
-            if (err) return console.log(err)
+            if (err) throw err 
             res.json({
                 "data": true,
                 "DIresult": "Success",
@@ -475,6 +474,45 @@ export const verificarAsn = async (req, res) => {
                 "cantidadProductos": rows[0].row
 
             })
+        })
+    })
+}
+```
+### Despacho Express
+```http
+  POST /api/impruvex/despachoExpress/
+```
+El Despacho Express nos avisa que ya fue procesado y está listo para retirarlo o bien despachar el pedido, esta información la guardamos en la tabla despachos_invas.
+
+| Parametro | Tipo     | Descripcion                |
+| :-------- | :------- | :------------------------- |
+| `fecha_despacho` | `date` `NULL`  | Fecha del despacho |
+| `cotizacion` | `varchar(30)` `NULL`| Numero de OS (cotizacion)|
+| `producto_id` | `int(10) unsigned` `NULL` | Código del producto|
+| `cantidad` | `smallint(5) unsigned` `NULL` | Unidades recibidas  |
+| `estado` | `tinyint(3) unsigned` `NOT NULL` | estado usado para notificación  |
+
+#### Codigo Node js
+```js
+export const despachoExpress = async (req, res) => {
+    const post = req.body.listaLpnDestino
+    var fecha = new Date().getFullYear() + '-' + ("0" + (new Date().getMonth() + 1)).slice(-2) + '-' + ("0" + new Date().getDate()).slice(-2)
+    await req.getConnection(async (error, conexion) => {
+        if (error) return res.send(error)
+        await post.forEach(e => {
+            let sql = 'INSERT INTO despachos_invas VALUES (?,?,?,?,?,?);'
+            conexion.query(sql, [undefined, fecha, e.ordendesalida, e.sku, e.unidades, 0], (err, rows) => {
+                if (err) throw err 
+            })
+        })
+        res.json({
+            "Results": [{
+                    "data": true,
+                    "ordendesalida": post[0].ordendesalida,
+                    "DIresult": "Success",
+                    "DImsg": "179116",
+                    "messaje": "Datos Recibidos",
+                }]
         })
     })
 }
