@@ -96,11 +96,12 @@ Solo indicaremos los campos que son requeridos, para mayor detalle solicitar la 
 
 ```mysql
 //  Cabecera 
-$query = "SELECT CO.ocompra,CP.id FROM comex_ocompra CO JOIN comex_proveedores CP ON CP.id=CO.proveedor_id WHERE CO.ocompra=".$id.";";
-$result = mysqli_query($conn, $query);
-while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
-    $codigo = $row['ocompra'];
-    $proveedor = $row['identificacion'];
+ $query = "SELECT CO.ocompra,CP.identificacion,CO.proforma FROM comex_ocompra CO JOIN comex_proveedores CP ON CP.id=CO.proveedor_id WHERE CO.id=".$id.";";
+        $result = mysqli_query($conn, $query);
+        while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+            $codigo = $row['ocompra'];
+            $proveedor = $row['identificacion'];
+            $invoice = $row['proforma'];
 }
 
 // Detalle  
@@ -122,16 +123,17 @@ while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
 $url = "tuUrl";
 $token = "tuToken";
 $inserData = [
-    "usuario" => "tuUsuario", // Se deben crear credenciales SOLO para integracion 
-    "password" => "tuClave",
-    "ordenDeCompra" => [
-        "codigo" => $codigo,
-        "sitio" => "CD_PROVALTEC", 
-        "proveedor" => $proveedor, 
-        "tipo" => "IMP", 
-        "descripcion" => "OC ingresada mediante integracion", 
-        "listaDetalle" => $detalle
-    ]
+            "usuario" => "tuUsuario", // Se deben crear credenciales SOLO para integracion 
+            "password" => "tuClave",
+            "ordenDeCompra" => [
+                "codigo" => $codigo,
+                "sitio" => "CD_PROVALTEC",
+                "proveedor" => $proveedor, 
+                "tipo" => "IMP", 
+                "descripcion" => "OC ingresada mediante integracion",
+                "campo01" => $invoice,
+                "listaDetalle" => $detalle
+            ]
 ];
 
 $conInv = curl_init($url);
@@ -176,18 +178,22 @@ Solo indicaremos los campos que son requeridos, para mayor detalle solicitar la 
 
 ```mysql
 //  Cabecera 
-$query = "SELECT C.cotizacion, C.fecha, CL.rut, CL.razon_social, IFNULL(CL.telefonos,'')telefono, IFNULL(CL.direccion,'') direccion, IFNULL(CO.descripcion,'') comuna, IFNULL(CL.email,'') email FROM cotizaciones C JOIN clientes CL ON CL.id=C.cliente_id JOIN comunas CO ON CO.id=CL.comuna WHERE C.cotizacion='111444VV';";
-$result = mysqli_query($conn, $query);
-while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
-    $os = $row['cotizacion'];
-    $fecha = $row['fecha'];
-    $cliente = $row['rut'];
-    $nombreCliente = $row['razon_social'];
-    $telefonoCliente = $row['telefono'];
-    $direccionCliente = $row['direccion'];
-    $ciudadcliente = $row['comuna'];
-    $emailCliente = $row['email'];
-}
+	$query = "SELECT C.cotizacion, DATE_FORMAT(C.fecha_req,'%Y/%m/%d') fecha, CL.rut, CL.razon_social,C.origen_id, IFNULL(CL.telefonos,'')telefono, IFNULL(CL.direccion,'') direccion, IFNULL(CO.descripcion,'') comuna, IFNULL(C.email_aviso,'') email,C.despacho_retiro,C.cond_despacho,C.req_certificado FROM cotizaciones C LEFT JOIN clientes CL ON CL.id=C.cliente_id LEFT JOIN comunas CO ON CO.id=CL.comuna WHERE C.id=" . trim($id) . ";";
+	$result = mysqli_query($conn, $query);
+	while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+		$os = $row['cotizacion'];
+		$fecha = $row['fecha'];
+		$cliente = $row['rut'];
+		$nombreCliente = $row['razon_social'];
+		$telefonoCliente = $row['telefono'];
+		$direccionCliente = $row['direccion'];
+		$ciudadcliente = $row['comuna'];
+		$emailCliente = $row['email'];
+		$idOrigen = $row['origen_id'];
+		$despachoRetiro = $row['despacho_retiro'];
+		$condicionDespacho = $row['cond_despacho'];
+		$certificado = $row['req_certificado'];
+	}
 
 // Detalle  
 $query = "SELECT CD.producto_id sku, CD.cantidad FROM cotizaciones_det CD WHERE cotizacion_id='112150';";
@@ -205,36 +211,39 @@ while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
 $url = "tuUrl";
 $token = "tuToken";
 $inserData = [
-    "usuario" => "tuUsuario", 
-    "password" => "tuClave",
-    "os" => [
-        "idOs" => $os,
-        "sitio" => "CD_PROVALTEC",
-        "tipoOs" => "OV",// OSEXPRESS para presenciales
-        "cliente" => $cliente,
-        "fechaPactada" => $fecha,
-        "nombreCliente" => $nombreCliente,
-        "telefonoCliente" => $telefonoCliente,
-        "direccionCliente" => mb_convert_encoding($direccionCliente, 'UTF-8', 'ISO-8859-1'), // usar utf8_encode para versiones > 7
-        "ciudadcliente" => $ciudadcliente,
-        "emailCliente" => $emailCliente,
-        "destino" => "RUTA_PRINCIPAL",
-        "clienteRegion" => "",
-        "clienteComuna" => $ciudadcliente,
-        "listaTipoInsumo" => $detalle
+  "usuario" => "tuUsuario", // Se deben crear credenciales SOLO para integracion 
+  "password" => "tuClave",
+		"os" => [
+			"idOs" => $os,
+			"sitio" => "CD_PROVALTEC",
+			"tipoOs" => $origen,
+			"cliente" => $cliente,
+			"fechaPactada" => $fecha,
+			"nombreCliente" => $nombreCliente,
+			"telefonoCliente" => $telefonoCliente,
+			"direccionCliente" => mb_convert_encoding($direccionCliente, 'UTF-8', 'ISO-8859-1'), // usar utf8_encode para versiones 7.1
+			"ciudadcliente" => $ciudadcliente,
+			"emailCliente" => $emailCliente,
+			"destino" => $destino,
+			"campo01" => trim($condicionDespacho),
+			"campo02" => $despacho,
+			"campo03" => $cert,
+			"clienteRegion" => "",
+			"clienteComuna" => $ciudadcliente,
+			"listaTipoInsumo" => $detalle
 
-    ]
-];
+		]
+	];
 
-$conInv = curl_init($url);
-$headers = [];
-$headers[] = 'Content-Type:application/json';
-$headers[] = "Authorization: Bearer " . $token;
-curl_setopt($conInv, CURLOPT_HTTPHEADER, $headers);
-curl_setopt($conInv, CURLOPT_POSTFIELDS, json_encode($inserData));
-curl_setopt($conInv, CURLOPT_RETURNTRANSFER, true);
-$data = curl_exec($conInv);
-curl_close($conInv);
+	//Conexion a API invas mediante CURL
+	$conInv = curl_init($url);
+	$headers = [];
+	$headers[] = 'Content-Type:application/json';
+	$headers[] = "Authorization: Bearer " . $token;
+	curl_setopt($conInv, CURLOPT_HTTPHEADER, $headers);
+	curl_setopt($conInv, CURLOPT_POSTFIELDS, json_encode($inserData));
+	curl_setopt($conInv, CURLOPT_RETURNTRANSFER, true);
+	$data = curl_exec($conInv);
 
 ```
 ### Resumen de inventario
